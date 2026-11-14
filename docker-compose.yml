@@ -1,0 +1,31 @@
+services:
+  api:
+    build: ./backend
+    environment:
+      PORT: "3000"
+      DATABASE_PATH: /data/tasks.db
+    volumes:
+      - tasks-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3000/api/health').then((res) => process.exit(res.ok ? 0 : 1), () => process.exit(1))
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+
+  web:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  tasks-data:

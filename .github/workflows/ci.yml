@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: Typecheck, tests y build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+            frontend/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm ci --prefix backend
+      - run: npm ci --prefix frontend
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  docker:
+    name: Docker Compose
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker compose up --build --detach --wait
+      - name: Smoke test a través de nginx
+        run: |
+          curl --fail --silent --show-error --retry 5 --retry-connrefused http://localhost:8080/ > /dev/null
+          curl --fail --silent --show-error -X POST http://localhost:8080/api/tasks \
+            -H 'Content-Type: application/json' \
+            -d '{"title":"Smoke test","assignee":"CI"}'
+          curl --fail --silent --show-error 'http://localhost:8080/api/tasks?status=pending' | grep -q 'Smoke test'
+      - if: always()
+        run: docker compose logs
+      - if: always()
+        run: docker compose down --volumes
