@@ -142,10 +142,11 @@ docker-compose.yml
 
 Usé Claude Code, el asistente de programación de Anthropic, durante toda la prueba.
 
-- **Qué le pedí:** le pasé el enunciado tal cual y le pedí la aplicación completa: API, frontend, tests, Docker Compose y este README.
+- **Qué le pedí:** le di el enunciado y le pedí la aplicación completa: API, frontend, tests, Docker Compose y este README.
 - **Qué hizo:** propuso el stack y la estructura que explico en «Decisiones», escribió el código y los tests, los ejecutó y probó la aplicación en un navegador: crear, filtrar, cambiar de estado, error y reintento con la API caída, y vista móvil.
 - **Qué se corrigió al probar:**
   - El nombre accesible de los botones de estado se calculaba mal en jsdom; se cambió a `aria-label` y los tests lo comprueban.
   - Si escribías en el formulario mientras se guardaba la tarea anterior, el reseteo borraba lo escrito. Ahora el formulario se bloquea mientras guarda, y hay un test que lo cubre.
   - En móvil, el filtro de estados se partía en dos líneas.
-- **Qué acepté y qué cambié yo:** _pendiente de completar tras mi revisión._
+  - El primer run del CI falló al validar `docker-compose.yml`: el comando del healthcheck iba sin comillas y YAML lo leía como un mapa. Se entrecomilló y el siguiente run pasó.
+- **Qué acepté y qué cambié yo:** acepté la implementación tal como quedó, con los tests y el CI en verde; no hice correcciones a mano.
